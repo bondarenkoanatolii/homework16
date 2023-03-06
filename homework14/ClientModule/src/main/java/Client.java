@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,7 +13,7 @@ public class Client {
 
     private static Socket clientSocket;
     private BufferedReader reader;
-
+    private Scanner scanner;
     private static BufferedReader in;
     private static BufferedWriter out;
     private static volatile boolean exit = false;
@@ -26,6 +28,7 @@ public class Client {
         try {
             clientSocket = new Socket("localhost", 4004);
             reader = new BufferedReader(new InputStreamReader(System.in));
+            scanner = new Scanner(System.in);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
@@ -33,23 +36,12 @@ public class Client {
 //            ExecutorService exec = Executors.newFixedThreadPool(2);
 //            exec.execute(new ReadMsg());
 //            exec.execute(new WriteMsg());
-          //  exec.shutdown();
+            //  exec.shutdown();
             ReadMsg readMsg = new ReadMsg();
             readMsg.start();
 
             WriteMsg writeMsg = new WriteMsg();
             writeMsg.start();
-
-//            writeMsg.join();
-//            System.out.println("WriteMsg.join");
-//            readMsg.join();
-   //     }
-//        finally {
-//            System.out.println("Клиент был закрыт...");
-//            clientSocket.close();
-//            in.close();
-//            out.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -61,35 +53,23 @@ public class Client {
         @Override
         public void run() {
             String str;
-           // System.out.println("Entry ReadMsg");
             try {
                 while (!exit) {
                     str = in.readLine();
-
                     if (str.equals("-exit")) {
-                        System.out.println("Press Enter to exit.");
+                        System.out.println("Press Enter to exit...");
                         exit = true;
-                        while (!reader.ready()) {
-                            Thread.sleep(200);
-                        }
                         in.close();
-                      //  reader.close();
                         break;
                     } else {
                         System.out.println(str);
                     }
                 }
-            } catch (SocketException e ) {
+            } catch (SocketException e) {
 
-            }
-            catch (IOException  e) {
-                e.printStackTrace();
-            } /*catch (InterruptedException e) {
-                e.printStackTrace();
-            }*/ catch (InterruptedException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println("Finish read");
         }
     }
 
@@ -97,39 +77,35 @@ public class Client {
     private class WriteMsg extends Thread {
         @Override
         public void run() {
-            while (true) {
+            while (!exit) {
                 String userWord;
                 try {
-                   // System.out.println("Input line:");
-                    System.out.println("before while()");
-                    while (!reader.ready()) {
-                      //  Thread.sleep(200);
-                       // System.out.print(exit);
-                        if (exit) return;
-                    }
-                    System.out.println("reader.nextLine()");
-                    userWord = reader.readLine();
-                    System.out.println("after reader.nextLine()");
+                    userWord = scanner.nextLine();
+
                     if (userWord.equals("-exit")) {
+
                         out.write("-exit" + "\n");
                         out.flush();
                         out.close();
-                        out = null;
                         break;
                     } else if (userWord.trim().startsWith("-file")) {
                         fileTransfer(userWord);
                     } else {
-                        out.write(userWord + "\n"); // отправляем на сервер
+                        //userWord.getBytes(StandardCharsets.UTF_8);
+                        out.write(userWord);
+                       // out.write(userWord.getBytes()); // отправляем на сервер
+                        out.write( "\n"); // отправляем на сервер
                     }
                     out.flush();
                 } catch (IllegalStateException e) {
 
-                }
-                catch (IOException e) {
+                } catch (SocketException e) {
+
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            System.out.println("Finish write");
+
         }
     }
 

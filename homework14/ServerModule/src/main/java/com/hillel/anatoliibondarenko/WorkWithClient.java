@@ -7,7 +7,7 @@ import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-class SocketForClient extends Thread {
+class WorkWithClient extends Thread {
     private final Socket socket;
     private final String nameClient;
     private final LocalDateTime dateTimeEntry;
@@ -15,7 +15,7 @@ class SocketForClient extends Thread {
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток записи в сокет
 
-    public SocketForClient(Socket socket, String nameClient, LocalDateTime dateTimeEntry) throws IOException {
+    public WorkWithClient(Socket socket, String nameClient, LocalDateTime dateTimeEntry) throws IOException {
         this.socket = socket;
         this.nameClient = nameClient;
         this.dateTimeEntry = dateTimeEntry;
@@ -23,10 +23,6 @@ class SocketForClient extends Thread {
 
     public String getNameClient() {
         return nameClient;
-    }
-
-    public Socket getSocket() {
-        return socket;
     }
 
     @Override
@@ -43,7 +39,6 @@ class SocketForClient extends Thread {
                     // Переправляємо "-exit" на вхід клієнта, щоб
                     sendMessageAboutExitClient();
                     this.send("-exit");
-                    this.getSocket().close();
                     break;
                 } else if (word.trim().startsWith("-file"))
                     receiveFile();
@@ -51,35 +46,34 @@ class SocketForClient extends Thread {
             }
         } catch (NullPointerException e) {
 
-        } catch (SocketException e ) {
+        } catch (SocketException e) {
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void sendMessageAboutEntry() {
         String message = "[SERVER] " + "[" + currentTime() + "] " + getNameClient() + " connected successfully.";
-        for (SocketForClient socketForClient : Server.listClients) {
-            if (!socketForClient.equals(this))
-                socketForClient.send(message);
+        for (WorkWithClient workWithClient : Server.listClients) {
+            if (!workWithClient.equals(this))
+                workWithClient.send(message);
         }
     }
 
     private void sendMessageAboutExitClient() {
         String message = "[SERVER] " + "[" + currentTime() + "] " + getNameClient() + " has left us.";
         Server.listClients.remove(this);
-        for (SocketForClient socketForClient : Server.listClients) {
-            socketForClient.send(message);
+        for (WorkWithClient workWithClient : Server.listClients) {
+            workWithClient.send(message);
         }
     }
 
     private void sendMessageAllClients(String message) {
         message = "[" + getNameClient() + "] " + "[" + currentTime() + "]: " + message;
-        for (SocketForClient socketForClient : Server.listClients) {
-            if (!socketForClient.equals(this))
-                socketForClient.send(message);
+        for (WorkWithClient workWithClient : Server.listClients) {
+            if (!workWithClient.equals(this))
+                workWithClient.send(message);
         }
     }
 
@@ -117,7 +111,6 @@ class SocketForClient extends Thread {
     public void send(String msg) {
         try {
             out.write(msg + "\n");
-//            out.write(msg );
             out.flush();
         } catch (IOException ioException) {
             ioException.printStackTrace();
