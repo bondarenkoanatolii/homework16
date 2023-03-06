@@ -27,7 +27,7 @@ class CreateSocketForClient extends Thread {
                 listClients.add(workWithClient);
             }
         } catch (SocketException e) {
-            System.out.printf("ServerSocket at port %d is closed", PORT);
+            System.out.printf("ServerSocket at port %d is closed.", PORT);
         } catch (IOException e) {
             e.printStackTrace();
         }

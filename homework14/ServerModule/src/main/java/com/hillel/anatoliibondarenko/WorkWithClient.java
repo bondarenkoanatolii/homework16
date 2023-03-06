@@ -98,7 +98,7 @@ class WorkWithClient extends Thread {
             }
 
             output.close();
-            send("[SERVER] " + "[" + currentTime() + "]: File " + fileName + " received by server");
+            send("[SERVER] " + "[" + currentTime() + "]: File " + fileName + " received by server.");
         } catch (IOException e) {
             e.printStackTrace();
         }

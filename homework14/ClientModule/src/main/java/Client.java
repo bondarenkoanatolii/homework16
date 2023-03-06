@@ -32,11 +32,6 @@ public class Client {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
-//
-//            ExecutorService exec = Executors.newFixedThreadPool(2);
-//            exec.execute(new ReadMsg());
-//            exec.execute(new WriteMsg());
-            //  exec.shutdown();
             ReadMsg readMsg = new ReadMsg();
             readMsg.start();
 
@@ -73,7 +68,7 @@ public class Client {
         }
     }
 
-    // нить отправляющая сообщения приходящие с консоли на сервер
+    // нить отправляющая сообщения с консоли на сервер
     private class WriteMsg extends Thread {
         @Override
         public void run() {
@@ -83,7 +78,6 @@ public class Client {
                     userWord = scanner.nextLine();
 
                     if (userWord.equals("-exit")) {
-
                         out.write("-exit" + "\n");
                         out.flush();
                         out.close();
@@ -91,10 +85,8 @@ public class Client {
                     } else if (userWord.trim().startsWith("-file")) {
                         fileTransfer(userWord);
                     } else {
-                        //userWord.getBytes(StandardCharsets.UTF_8);
                         out.write(userWord);
-                       // out.write(userWord.getBytes()); // отправляем на сервер
-                        out.write( "\n"); // отправляем на сервер
+                        out.write("\n");
                     }
                     out.flush();
                 } catch (IllegalStateException e) {
